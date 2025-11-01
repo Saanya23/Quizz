@@ -1,960 +1,243 @@
 <!doctype html>
-
 <html lang="en">
-
 <head>
-
   <meta charset="utf-8"/>
-
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-
   <title>Hand Gesture ESG Quiz</title>
-
   <style>
-
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin:0; background:#1e1e1e; color:#eee; text-align:center; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; }
-
-    video, canvas { position: fixed; left:0; top:0; width: 100vw; height: 100vh; object-fit: cover; transform: scaleX(-1); z-index: -1; }
-
-    #quizContainer { background: rgba(0, 0, 0, 0.75); padding: 40px; border-radius: 15px; max-width: 800px; width: 90%; box-shadow: 0 10px 30px rgba(0, 255, 100, 0.3); transition: opacity 0.5s; }
-
-    #statusBox { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
-
-                 background: rgba(255, 255, 255, 0.9); color: #1e1e1e; padding: 15px 30px; border-radius: 50px; font-size: 22px; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.4); z-index: 10; }
-
-
-
-    /* Instruction Window */
-
-    #instructionsBox {
-
-        position: fixed;
-
-        top: 20px;
-
-        left: 20px;
-
-        background: rgba(0, 0, 0, 0.6);
-
-        color: #fff;
-
-        padding: 10px 15px;
-
-        border-radius: 8px;
-
-        font-size: 16px;
-
-        text-align: left;
-
-        line-height: 1.5;
-
-        z-index: 10;
-
-        border-left: 5px solid #00ff66;
-
-    }
-
-    #instructionsBox strong { color: #00ff66; }
-
-
-
-
-
-    /* Quiz Elements */
-
-    #questionText { font-size: 28px; margin-bottom: 30px; color: #aaffaa; }
-
-    .option { background: rgba(40, 40, 40, 0.8); padding: 15px; margin: 15px 0; border-radius: 10px; text-align: left; font-size: 18px; cursor: pointer; border: 2px solid transparent; transition: background 0.2s, border-color 0.2s; }
-
-    .option:hover { background: rgba(60, 60, 60, 0.8); }
-
-    .option-label { font-weight: bold; color: #ffeb3b; margin-right: 15px; }
-
-
-
-    /* Highlight on Gesture */
-
-    .option.highlight { border-color: #00ff66; background: rgba(0, 255, 102, 0.15); box-shadow: 0 0 15px rgba(0, 255, 102, 0.5); }
-
-
-
-    /* Confirmation Modal */
-
-    #confirmationModal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); z-index: 20; display: none; flex-direction: column; align-items: center; justify-content: center; }
-
-    #modalContent { background: #2c2c2c; padding: 40px; border-radius: 15px; box-shadow: 0 0 30px rgba(0, 255, 100, 0.7); max-width: 500px; }
-
-    #modalText { font-size: 24px; margin-bottom: 30px; color: #aaffaa; }
-
-    .modal-button { padding: 12px 25px; margin: 0 10px; font-size: 20px; border-radius: 8px; cursor: pointer; border: none; font-weight: bold; transition: background 0.2s, transform 0.1s; }
-
-    #confirmBtn { background-color: #00ff66; color: #1e1e1e; }
-
-    #confirmBtn:hover { background-color: #00e655; transform: translateY(-2px); }
-
-    #cancelBtn { background-color: #ff4444; color: #fff; }
-
-    #cancelBtn:hover { background-color: #e63333; transform: translateY(-2px); }
-
-    
-
-    /* Result Screen */
-
-    #resultScreen { display: none; text-align: center; }
-
-    #resultScreen h2 { font-size: 36px; color: #00ff66; margin-bottom: 20px; }
-
-    #resultScreen p { font-size: 24px; margin-bottom: 40px; }
-
-    #restartBtn { background-color: #00aaff; color: #fff; padding: 15px 30px; border: none; border-radius: 10px; font-size: 22px; cursor: pointer; transition: background 0.2s; }
-
-    #restartBtn:hover { background-color: #0088cc; }
-
+    body { font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin:0; background:#1e1e1e; color:#eee; text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh;}
+    video, canvas { position:fixed; left:0; top:0; width:100vw; height:100vh; object-fit:cover; transform:scaleX(-1); z-index:-1;}
+    #quizContainer { background:rgba(0,0,0,0.75); padding:40px; border-radius:15px; max-width:800px; width:90%; box-shadow:0 10px 30px rgba(0,255,100,0.3); transition:opacity 0.5s;}
+    #statusBox { position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:rgba(255,255,255,0.9); color:#1e1e1e; padding:15px 30px; border-radius:50px; font-size:22px; font-weight:bold; box-shadow:0 4px 15px rgba(0,0,0,0.4); z-index:10;}
+    #instructionsBox { position:fixed; top:20px; left:20px; background:rgba(0,0,0,0.6); color:#fff; padding:10px 15px; border-radius:8px; font-size:16px; text-align:left; line-height:1.5; z-index:10; border-left:5px solid #00ff66;}
+    #instructionsBox strong { color:#00ff66;}
+    #questionText { font-size:28px; margin-bottom:30px; color:#aaffaa;}
+    .option { background:rgba(40,40,40,0.8); padding:15px; margin:15px 0; border-radius:10px; text-align:left; font-size:18px; cursor:pointer; border:2px solid transparent; transition:background 0.2s, border-color 0.2s;}
+    .option:hover { background:rgba(60,60,60,0.8);}
+    .option-label { font-weight:bold; color:#ffeb3b; margin-right:15px;}
+    .option.highlight { border-color:#00ff66; background:rgba(0,255,102,0.15); box-shadow:0 0 15px rgba(0,255,102,0.5);}
+    #confirmationModal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:20; display:none; flex-direction:column; align-items:center; justify-content:center;}
+    #modalContent { background:#2c2c2c; padding:40px; border-radius:15px; box-shadow:0 0 30px rgba(0,255,100,0.7); max-width:500px;}
+    #modalText { font-size:24px; margin-bottom:30px; color:#aaffaa;}
+    .modal-button { padding:12px 25px; margin:0 10px; font-size:20px; border-radius:8px; cursor:pointer; border:none; font-weight:bold; transition:background 0.2s, transform 0.1s;}
+    #confirmBtn { background-color:#00ff66; color:#1e1e1e;}
+    #confirmBtn:hover { background-color:#00e655; transform:translateY(-2px);}
+    #cancelBtn { background-color:#ff4444; color:#fff;}
+    #cancelBtn:hover { background-color:#e63333; transform:translateY(-2px);}
+    #resultScreen { display:none; text-align:center;}
+    #resultScreen h2 { font-size:36px; color:#00ff66; margin-bottom:20px;}
+    #resultScreen p { font-size:24px; margin-bottom:40px;}
+    #restartBtn { background-color:#00aaff; color:#fff; padding:15px 30px; border:none; border-radius:10px; font-size:22px; cursor:pointer; transition:background 0.2s;}
+    #restartBtn:hover { background-color:#0088cc;}
   </style>
-
 </head>
-
 <body>
-
   <video id="video" autoplay playsinline></video>
-
   <canvas id="overlay"></canvas>
 
-
-
   <div id="instructionsBox">
-
     <strong>Gesture Guide (Right Hand Only):</strong><br>
-
     Thumbs up: option A<br>
-
-    Index finger and thumb pointed: option B<br>
-
-    O (Circular) gesture 👌: option C<br>
-
+    Index finger up: option B<br>
+    O gesture 👌: option C<br>
     Palm open: option D
-
   </div>
 
   <div id="quizContainer">
-
     <div id="quizContent">
-
       <div id="questionText"></div>
-
       <div id="optionsContainer"></div>
-
     </div>
-
     <div id="resultScreen">
-
-        <h2>Quiz Complete!</h2>
-
-        <p id="scoreText"></p>
-
-        <button id="restartBtn">Start Over</button>
-
+      <h2>Quiz Complete!</h2>
+      <p id="scoreText"></p>
+      <button id="restartBtn">Start Over</button>
     </div>
-
   </div>
-
-
 
   <div id="statusBox">🖐 Show your hand...</div>
 
-
-
   <div id="confirmationModal">
-
     <div id="modalContent">
-
       <div id="modalText"></div>
-
       <button id="confirmBtn" class="modal-button">Select</button>
-
       <button id="cancelBtn" class="modal-button">Cancel</button>
-
     </div>
-
   </div>
 
-
-
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
-
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
 
-
-
   <script>
-
   (async function(){
-
     const video = document.getElementById('video');
-
     const overlay = document.getElementById('overlay');
-
     const ctx = overlay.getContext('2d');
-
     const statusBox = document.getElementById('statusBox');
-
     const confirmationModal = document.getElementById('confirmationModal');
-
     const modalTextEl = document.getElementById('modalText');
-
     const confirmBtn = document.getElementById('confirmBtn');
-
     const cancelBtn = document.getElementById('cancelBtn');
-
     const resultScreen = document.getElementById('resultScreen');
-
     const scoreTextEl = document.getElementById('scoreText');
-
     const restartBtn = document.getElementById('restartBtn');
-
     const questionTextEl = document.getElementById('questionText');
-
     const optionsContainer = document.getElementById('optionsContainer');
 
-
-
-
-
-    // Quiz Data (unchanged)
-
     const quiz = [
-
       {
-
         question: "A company issues a green bond with lower yield but strong sustainability credentials. What would a rational ESG investor most likely choose?",
-
-        options: {
-
-          A: "Avoid it due to lower return",
-
-          B: "Invest, valuing long-term sustainable impact",
-
-          C: "Hold cash until rates rises",
-
-          D: "Sell similar bonds to offset risk"
-
-        },
-
+        options: { A: "Avoid it due to lower return", B: "Invest, valuing long-term sustainable impact", C: "Hold cash until rates rise", D: "Sell similar bonds to offset risk" },
         correctAnswer: "B"
-
       },
-
       {
-
         question: "A bank adopts blockchain for international payments. What’s the main implementation risk?",
-
-        options: {
-
-          A: "Conflict with data privacy and compliance laws",
-
-          B: "High carbon emissions",
-
-          C: "Need for extra staff",
-
-          D: "Limited use in retail transactions"
-
-        },
-
+        options: { A: "Conflict with data privacy and compliance laws", B: "High carbon emissions", C: "Need for extra staff", D: "Limited use in retail transactions" },
         correctAnswer: "A"
-
       },
-
       {
-
         question: "A Financial Wellness Coach meets a client earning well but carrying high-interest debt. What’s the most financially sound action?",
-
-        options: {
-
-          A: "Invest for higher returns",
-
-          B: "Pay off the debt first",
-
-          C: "Build emergency savings only",
-
-          D: "Take another loan to balance interest"
-
-        },
-
+        options: { A: "Invest for higher returns", B: "Pay off the debt first", C: "Build emergency savings only", D: "Take another loan to balance interest" },
         correctAnswer: "B"
-
       },
-
       {
-
         question: "A Blockchain Consultant proposes asset tokenisation for real estate. What’s the strongest financial benefit?",
-
-        options: {
-
-          A: "Fractional ownership and greater market liquidity",
-
-          B: "Guaranteed capital protection",
-
-          C: "Elimination of property tax",
-
-          D: "Automated rent collection"
-
-        },
-
+        options: { A: "Fractional ownership and greater market liquidity", B: "Guaranteed capital protection", C: "Elimination of property tax", D: "Automated rent collection" },
         correctAnswer: "A"
-
       },
-
       {
-
         question: "An AI-based credit approval system is fast but non-transparent. What’s the key ethical concern?",
-
-        options: {
-
-          A: "Algorithmic bias and black-box decision-making",
-
-          B: "Server maintenance costs",
-
-          C: "Too many data points",
-
-          D: "Long model training time"
-
-        },
-
+        options: { A: "Algorithmic bias and black-box decision-making", B: "Server maintenance costs", C: "Too many data points", D: "Long model training time" },
         correctAnswer: "A"
-
       },
-
       {
-
         question: "In space insurance, what makes pricing premiums uniquely difficult?",
-
-        options: {
-
-          A: "Lack of long-term risk data",
-
-          B: "Rapidly changing satellite designs",
-
-          C: "Low demand",
-
-          D: "Absence of competition"
-
-        },
-
+        options: { A: "Lack of long-term risk data", B: "Rapidly changing satellite designs", C: "Low demand", D: "Absence of competition" },
         correctAnswer: "A"
-
       },
-
       {
-
         question: "A new insurance app adjusts premiums using users’ GPS driving data. What ethical issue arises?",
-
-        options: {
-
-          A: "Potential breach of user privacy",
-
-          B: "Slow network connection",
-
-          C: "Duplicate policy entries",
-
-          D: "Limited language support"
-
-        },
-
+        options: { A: "Potential breach of user privacy", B: "Slow network connection", C: "Duplicate policy entries", D: "Limited language support" },
         correctAnswer: "A"
-
       },
-
       {
-
         question: "A Green Finance project yields high returns but weakens social safeguards. What best aligns with ESG principles?",
-
-        options: {
-
-          A: "Postpone until full compliance",
-
-          B: "Continue for profit’s sake",
-
-          C: "Offset by funding other social projects",
-
-          D: "Ignore non-environmental issues"
-
-        },
-
+        options: { A: "Postpone until full compliance", B: "Continue for profit’s sake", C: "Offset by funding other social projects", D: "Ignore non-environmental issues" },
         correctAnswer: "A"
-
       },
-
       {
-
         question: "An investor using an AI robo-adviser sells after a market drop, ignoring advice to hold. Which behavioural bias is this?",
-
-        options: {
-
-          A: "Herding",
-
-          B: "Loss aversion",
-
-          C: "Framing effect",
-
-          D: "Optimism bias"
-
-        },
-
+        options: { A: "Herding", B: "Loss aversion", C: "Framing effect", D: "Optimism bias" },
         correctAnswer: "B"
-
       },
-
       {
-
         question: "Governments want blockchain-based carbon credit markets. Which setup makes it both transparent and legitimate?",
-
-        options: {
-
-          A: "Decentralised verification with central policy oversight",
-
-          B: "Anonymous trading only",
-
-          C: "Public access without regulation",
-
-          D: "Private ledgers without carbon data"
-
-        },
-
+        options: { A: "Decentralised verification with central policy oversight", B: "Anonymous trading only", C: "Public access without regulation", D: "Private ledgers without carbon data" },
         correctAnswer: "A"
-
       }
-
     ];
 
+    let currentQuestionIndex = 0, score = 0, selections = {};
+    let lastGesture = null, holdStartTime = null, selectedOptionKey = null;
+    const CONFIRM_HOLD_TIME = 1500; // milliseconds to confirm gesture
 
+    const GESTURE_MAP = { thumb_up:'A', index_up:'B', okay_sign:'C', open_hand:'D' };
 
-    let currentQuestionIndex = 0;
-
-    let score = 0;
-
-    let selections = {}; 
-
-
-
-    let lastGesture = null;
-
-    let holdStartTime = null;
-
-    const CONFIRM_HOLD_TIME = 3000; 
-
-    let selectedOptionKey = null; 
-
-
-
-    // FINAL GESTURE MAPPING
-
-    const GESTURE_MAP = {
-
-        'thumb_up': 'A',
-
-        'index_up': 'B',
-
-        'okay_sign': 'C', 
-
-        'open_hand': 'D', // Mapped to Option D
-
-    };
-
-
-
-    // --- Utility Functions ---
-
-
-
-    function resize() {
-
-      overlay.width = window.innerWidth;
-
-      overlay.height = window.innerHeight;
-
-      video.width = window.innerWidth;
-
-      video.height = window.innerHeight;
-
-    }
-
+    function resize(){ overlay.width = window.innerWidth; overlay.height = window.innerHeight; video.width = window.innerWidth; video.height = window.innerHeight;}
     window.addEventListener('resize', resize);
-
     resize();
 
+    const TIPS = {thumb:4,index:8,middle:12,ring:16,pinky:20};
+    const PIP  = {thumb:2,index:6,middle:10,ring:14,pinky:18};
 
+    const hands = new Hands({ locateFile:(file)=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
+    hands.setOptions({ maxNumHands:1, modelComplexity:1, minDetectionConfidence:0.7, minTrackingConfidence:0.7 });
 
-    // Landmark IDs
-
-    const TIPS = {thumb:4, index:8, middle:12, ring:16, pinky:20};
-
-    const PIP  = {thumb:2, index:6, middle:10, ring:14, pinky:18};
-
-
-
-    const hands = new Hands({
-
-      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
-
-    });
-
-    hands.setOptions({
-
-      maxNumHands: 1,
-
-      modelComplexity: 1,
-
-      minDetectionConfidence: 0.6,
-
-      minTrackingConfidence: 0.5
-
-    });
-
-
-
-    const camera = new Camera(video, {
-
-      onFrame: async () => await hands.send({image: video}),
-
-      width: 1280,
-
-      height: 720
-
-    });
-
+    const camera = new Camera(video, { onFrame: async()=>await hands.send({image:video}), width:1280, height:720 });
     await camera.start();
 
+    function getDistance(p1,p2){ return Math.sqrt(Math.pow(p2.x-p1.x,2)+Math.pow(p2.y-p1.y,2)); }
 
-
-    // Helper function to calculate Euclidean distance between two points
-
-    function getDistance(p1, p2) {
-
-        return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
-
-    }
-
-
-
-
-
-    function fingersUp(lm) {
-
-      const up = {};
-
-      // A finger is "up" if its tip Y is less (higher on screen) than its PIP Y.
-
+    function fingersUp(lm){
+      const up={};
       up.index = lm[TIPS.index].y < lm[PIP.index].y;
-
       up.middle = lm[TIPS.middle].y < lm[PIP.middle].y;
-
       up.ring = lm[TIPS.ring].y < lm[PIP.ring].y;
-
       up.pinky = lm[TIPS.pinky].y < lm[PIP.pinky].y;
-
-      
-
-      // Thumb "up" based on Y-axis
-
-      up.thumb = lm[TIPS.thumb].y < lm[PIP.thumb].y; 
-
-      
-
+      up.thumb = lm[TIPS.thumb].y < lm[PIP.thumb].y;
       return up;
-
     }
 
-    
-
-    // *** FINAL REVISED GESTURE DETECTION LOGIC ***
-
-    function getGesture(lm, fUp) {
-
-        
-
-        // Option B: Index finger pointing (ONLY index is up)
-
-        if (fUp.index && !fUp.thumb && !fUp.middle && !fUp.ring && !fUp.pinky) {
-
-           return 'index_up';
-
-        }
-
-
-
-        // Option A: Thumb pointing up (ONLY thumb is up, others are down)
-
-        if (fUp.thumb && !fUp.index && !fUp.middle && !fUp.ring && !fUp.pinky) {
-
-           return 'thumb_up';
-
-        }
-
-
-
-        // Option D: Palm Open (ALL 5 fingers are up/stretched)
-
-        if (fUp.thumb && fUp.index && fUp.middle && fUp.ring && fUp.pinky) {
-
-           return 'open_hand'; 
-
-        }
-
-
-
-        // Option C: "O" (Circular) gesture - Thumb Tip (4) close to Index Tip (8)
-
-        // Check distance AND that the other three fingers are extended (up)
-
-        const tipDistance = getDistance(lm[TIPS.thumb], lm[TIPS.index]);
-
-        const IS_OKAY = (tipDistance < 0.05); // Threshold for tips touching/close
-
-        const ARE_OTHERS_UP = fUp.middle && fUp.ring && fUp.pinky;
-
-
-
-        if (IS_OKAY && ARE_OTHERS_UP) {
-
-           return 'okay_sign';
-
-        }
-
-
-
-        // (Fist Closed) - no selection
-
-        if (!fUp.thumb && !fUp.index && !fUp.middle && !fUp.ring && !fUp.pinky) {
-
-           return 'fist'; 
-
-        }
-
-        
-
-        // If none of the specific gestures are matched
-
-        return 'unknown';
-
+    function getGesture(lm,fUp){
+      if(fUp.index && !fUp.thumb && !fUp.middle && !fUp.ring && !fUp.pinky) return 'index_up';
+      if(fUp.thumb && !fUp.index && !fUp.middle && !fUp.ring && !fUp.pinky) return 'thumb_up';
+      if(fUp.thumb && fUp.index && fUp.middle && fUp.ring && fUp.pinky) return 'open_hand';
+      const tipDistance = getDistance(lm[TIPS.thumb],lm[TIPS.index]);
+      const areOthersUp = fUp.middle && fUp.ring && fUp.pinky;
+      if(tipDistance < 0.05 && areOthersUp) return 'okay_sign';
+      if(!fUp.thumb&&!fUp.index&&!fUp.middle&&!fUp.ring&&!fUp.pinky) return 'fist';
+      return 'unknown';
     }
 
-    // *** END FINAL REVISED GESTURE DETECTION LOGIC ***
-
-
-
-
-
-    // --- Quiz Logic (unchanged) ---
-
-
-
-    function loadQuestion() {
-
-        if (currentQuestionIndex >= quiz.length) {
-
-            showResults();
-
-            return;
-
-        }
-
-
-
-        const q = quiz[currentQuestionIndex];
-
-        document.getElementById('quizContent').style.display = 'block';
-
-        resultScreen.style.display = 'none';
-
-
-
-        questionTextEl.textContent = `Q${currentQuestionIndex + 1}. ${q.question}`;
-
-        optionsContainer.innerHTML = '';
-
-        const optionKeys = ['A', 'B', 'C', 'D'];
-
-
-
-        optionKeys.forEach(key => {
-
-            const optionDiv = document.createElement('div');
-
-            optionDiv.className = 'option';
-
-            optionDiv.id = `option-${key}`;
-
-            optionDiv.innerHTML = `<span class="option-label">${key})</span> ${q.options[key]}`;
-
-            optionsContainer.appendChild(optionDiv);
-
-        });
-
-
-
-        lastGesture = null; 
-
+    function loadQuestion(){
+      if(currentQuestionIndex>=quiz.length){ showResults(); return; }
+      const q = quiz[currentQuestionIndex];
+      document.getElementById('quizContent').style.display='block';
+      resultScreen.style.display='none';
+      questionTextEl.textContent=`Q${currentQuestionIndex+1}. ${q.question}`;
+      optionsContainer.innerHTML='';
+      ['A','B','C','D'].forEach(k=>{
+        const opt=document.createElement('div');
+        opt.className='option'; opt.id=`option-${k}`; opt.innerHTML=`<span class="option-label">${k})</span> ${q.options[k]}`;
+        optionsContainer.appendChild(opt);
+      });
+      lastGesture=null;
     }
 
-
-
-    function showConfirmation(optionKey) {
-
-        selectedOptionKey = optionKey;
-
-        const optionText = quiz[currentQuestionIndex].options[optionKey];
-
-        modalTextEl.innerHTML = `**Select ${optionKey}**<br> " ${optionText} " ?`;
-
-        confirmationModal.style.display = 'flex';
-
-        document.getElementById('quizContent').style.opacity = '0.3';
-
+    function showConfirmation(optionKey){
+      selectedOptionKey=optionKey;
+      modalTextEl.innerHTML=`**Select ${optionKey}**<br> "${quiz[currentQuestionIndex].options[optionKey]}" ?`;
+      confirmationModal.style.display='flex';
+      document.getElementById('quizContent').style.opacity='0.3';
     }
-
-
-
-    function hideConfirmation() {
-
-        confirmationModal.style.display = 'none';
-
-        document.getElementById('quizContent').style.opacity = '1';
-
-        selectedOptionKey = null;
-
-        holdStartTime = null; 
-
+    function hideConfirmation(){ confirmationModal.style.display='none'; document.getElementById('quizContent').style.opacity='1'; selectedOptionKey=null; holdStartTime=null; }
+    function selectOption(){ 
+      if(!selectedOptionKey)return;
+      selections[currentQuestionIndex]=selectedOptionKey;
+      if(selectedOptionKey===quiz[currentQuestionIndex].correctAnswer) score++;
+      hideConfirmation(); currentQuestionIndex++; loadQuestion();
     }
+    function showResults(){ document.getElementById('quizContent').style.display='none'; resultScreen.style.display='block'; const total=quiz.length; const pct=((score/total)*100).toFixed(0); scoreTextEl.innerHTML=`You scored **${score} out of ${total}** (${pct}%)`; }
+    function restartQuiz(){ currentQuestionIndex=0; score=0; selections={}; loadQuestion(); }
 
+    confirmBtn.onclick=selectOption;
+    cancelBtn.onclick=hideConfirmation;
+    restartBtn.onclick=restartQuiz;
 
-
-    function selectOption() {
-
-        if (!selectedOptionKey) return;
-
-
-
-        selections[currentQuestionIndex] = selectedOptionKey;
-
-        const currentQ = quiz[currentQuestionIndex];
-
-        if (selectedOptionKey === currentQ.correctAnswer) {
-
-            score++;
-
+    hands.onResults((results)=>{
+      ctx.clearRect(0,0,overlay.width,overlay.height);
+      document.querySelectorAll('.option').forEach(el=>el.classList.remove('highlight'));
+      if(confirmationModal.style.display==='flex'){ statusBox.textContent=`Modal Active. Confirm or Cancel.`; return; }
+      if(!results.multiHandLandmarks?.length){ statusBox.textContent="❌ No hand detected"; lastGesture=null; holdStartTime=null; return; }
+      const lm=results.multiHandLandmarks[0];
+      const handedness=results.multiHandedness[0]?.label;
+      if(handedness!=='Right'){ statusBox.textContent="⚠️ Please use your RIGHT HAND."; lastGesture=null; holdStartTime=null; return; }
+      const fUp=fingersUp(lm);
+      const gesture=getGesture(lm,fUp);
+      const key=GESTURE_MAP[gesture];
+      if(key){
+        const el=document.getElementById(`option-${key}`);
+        if(el){ el.classList.add('highlight');
+          if(gesture!==lastGesture){ lastGesture=gesture; holdStartTime=Date.now(); }
+          else{ const hold=Date.now()-holdStartTime; const pct=(hold/CONFIRM_HOLD_TIME)*100; statusBox.textContent=`Selection: ${key} | Hold: ${pct.toFixed(0)}%`;
+            if(hold>=CONFIRM_HOLD_TIME){ showConfirmation(key); lastGesture=null; holdStartTime=null; return; }
+          }
         }
-
-
-
-        hideConfirmation();
-
-        currentQuestionIndex++;
-
-        loadQuestion();
-
-    }
-
-
-
-    function showResults() {
-
-        document.getElementById('quizContent').style.display = 'none';
-
-        resultScreen.style.display = 'block';
-
-
-
-        const totalQuestions = quiz.length;
-
-        const percentage = ((score / totalQuestions) * 100).toFixed(0);
-
-
-
-        scoreTextEl.innerHTML = `You scored **${score} out of ${totalQuestions}** (${percentage}%)`;
-
-    }
-
-
-
-    function restartQuiz() {
-
-        currentQuestionIndex = 0;
-
-        score = 0;
-
-        selections = {};
-
-        loadQuestion();
-
-    }
-
-
-
-    // Event Listeners for Modal
-
-    confirmBtn.onclick = selectOption;
-
-    cancelBtn.onclick = hideConfirmation;
-
-    restartBtn.onclick = restartQuiz;
-
-
-
-    // --- Hand Tracking Loop ---
-
-
-
-    hands.onResults((results) => {
-
-        ctx.clearRect(0,0,overlay.width,overlay.height);
-
-
-
-        document.querySelectorAll('.option').forEach(el => el.classList.remove('highlight'));
-
-
-
-        if (confirmationModal.style.display === 'flex') {
-
-            statusBox.textContent = `Modal Active. Confirm or Cancel.`;
-
-            return;
-
-        }
-
-
-
-        if (!results.multiHandLandmarks?.length) {
-
-            statusBox.textContent = "❌ No hand detected";
-
-            lastGesture = null;
-
-            holdStartTime = null; 
-
-            return;
-
-        }
-
-        
-
-        // 1. Get the first hand detected
-
-        const lm = results.multiHandLandmarks[0];
-
-        const handedness = results.multiHandedness[0]?.label; 
-
-
-
-        // 2. CHECK FOR RIGHT HAND
-
-        if (handedness !== 'Right') {
-
-            statusBox.textContent = `⚠️ Please use your LEFT HAND.`;
-
-            lastGesture = null;
-
-            holdStartTime = null; 
-
-            return;
-
-        }
-
-
-
-
-
-        // Proceed with Right Hand detection
-
-        const fUp = fingersUp(lm); 
-
-        const currentGesture = getGesture(lm, fUp); // Pass lm for distance calculation
-
-
-
-        const optionKey = GESTURE_MAP[currentGesture];
-
-
-
-        if (optionKey) {
-
-            const optionEl = document.getElementById(`option-${optionKey}`);
-
-            if (optionEl) {
-
-                optionEl.classList.add('highlight'); 
-
-
-
-                if (currentGesture !== lastGesture) {
-
-                    lastGesture = currentGesture;
-
-                    holdStartTime = Date.now();
-
-                } else {
-
-                    const holdTime = Date.now() - holdStartTime;
-
-                    const percentage = (holdTime / CONFIRM_HOLD_TIME) * 100;
-
-                    
-
-                    statusBox.textContent = `Selection: ${optionKey} | Hold: ${percentage.toFixed(0)}%`;
-
-
-
-                    if (holdTime >= CONFIRM_HOLD_TIME) {
-
-                        showConfirmation(optionKey);
-
-                        lastGesture = null; 
-
-                        holdStartTime = null;
-
-                        return; 
-
-                    }
-
-                }
-
-            } else {
-
-                 statusBox.textContent = `🖐 Gesture for ${optionKey} detected.`;
-
-                 lastGesture = currentGesture;
-
-                 holdStartTime = Date.now(); 
-
-            }
-
-        } else {
-
-            // Not a selection gesture (unknown/fist)
-
-            statusBox.textContent = `🤔 Unclear or Unsupported gesture`;
-
-            lastGesture = null; 
-
-            holdStartTime = null; 
-
-        }
-
-
-
+      } else { statusBox.textContent="🤔 Unclear or Unsupported gesture"; lastGesture=null; holdStartTime=null; }
     });
 
-
-
-    // Start the quiz
-
     loadQuestion();
-
   })();
-
   </script>
-
 </body>
-
 </html>
-
